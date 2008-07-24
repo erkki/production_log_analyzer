@@ -18,6 +18,10 @@ Rendering twinkler/index within layouts/default
 Rendering layouts/default (200 OK)
 Completed in 0.616122 (1 reqs/sec) | Rendering: 0.242475 (39%) | DB: 0.002876 (0%)
 EOF
+
+    @kong_entry = LogParser::LogEntry.new <<-EOF
+Completed in 0.57672 (1 reqs/sec) | Rendering: 0.47752 (82%) | DB: 0.08223 (14%) | Rows: 75 | Queries: 32 | Method: GET | Request Size: 0 | Request Type: unknown | Response Format: html | Response Size: 71604 | Processed: FeaturedGamesController#index | 200 OK [http://www.kongregatetrunk.com/]
+EOF
   end
 
   def test_parse
@@ -42,6 +46,26 @@ EOF
     assert_equal 3, entry.queries.length
     assert_equal ['Browser Load', 0.003963], entry.queries.first
     assert_equal 0.034519, entry.request_time
+  end
+
+  def test_kong_style_page
+    assert_equal "FeaturedGamesController#index.html", @kong_entry.page
+  end
+
+  def test_row_count
+    assert_equal 75, @kong_entry.row_count
+  end
+
+  def test_query_count
+    assert_equal 32, @kong_entry.query_count
+  end
+
+  def test_request_size
+    assert_equal 0, @kong_entry.request_size
+  end
+
+  def test_response_size
+    assert_equal 71604, @kong_entry.response_size
   end
 
   def test_page

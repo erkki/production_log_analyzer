@@ -53,6 +53,8 @@ module LogParser
     ##
     # Creates a new LogEntry from the log data in +entry+.
 
+    attr_reader :row_count, :query_count, :request_size, :response_size
+
     def initialize(entry)
       @page = nil
       @ip = nil
@@ -81,16 +83,30 @@ module LogParser
           @page = $1
           @ip   = $2
           @time = $3
-        when /^Completed in ([\S]+) .+ Rendering: ([\S]+) .+ DB: ([\S]+)/ then
+        when /^Completed in ([\S]+) \(\d* reqs\/sec\) \| (.+)/ then
           next if @in_component > 0
           @request_time = $1.to_f
-          @render_time = $2.to_f
-          @db_time = $3.to_f
-        when /^Completed in ([\S]+) .+ DB: ([\S]+)/ then # Redirect
-          next if @in_component > 0
-          @request_time = $1.to_f
-          @render_time = 0
-          @db_time = $2.to_f
+          log_info = $2
+
+          log_info = log_info.split(' | ')
+          log_info = log_info.map do |entry|
+            next nil unless entry.index(': ')
+            entry.strip.split(': ')
+          end.compact.flatten
+          
+          log_info = Hash[*log_info]
+
+          @row_count = log_info['Rows'].to_i
+          @query_count = log_info['Queries'].to_i
+          @request_size = log_info['Request Size'].to_i
+          @response_size = log_info['Response Size'].to_i
+
+          @page = log_info['Processed'] if log_info['Processed']
+          @page += ".#{log_info['Response Format']}" if log_info['Response Format']
+
+          @db_time = log_info['DB'].split(' ').first.to_f if log_info['DB']
+          @render_time = log_info['Rendering'].split(' ').first.to_f if log_info['Rendering']
+          
         when /(.+?) \(([^)]+)\)   / then
           @queries << [$1, $2.to_f]
         when /^Start rendering component / then
