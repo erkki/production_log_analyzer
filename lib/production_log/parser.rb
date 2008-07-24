@@ -144,7 +144,7 @@ module LogParser
       when /^Completed/ then
         next unless comp_count[bucket] == 0
         entry = buckets.delete bucket
-        next unless entry.any? { |l| l =~ /^Processing/ }
+#        next unless entry.any? { |l| l =~ /^Processing/ }
         yield LogEntry.new(entry)
       end
     end

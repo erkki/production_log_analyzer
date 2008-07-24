@@ -1,5 +1,3 @@
-#!/usr/local/bin/ruby -w
-
 require 'stringio'
 require 'tempfile'
 require 'test/unit'

@@ -1,5 +1,3 @@
-#!/usr/local/bin/ruby -w
-
 $TESTING = true
 
 require 'tempfile'
@@ -90,6 +88,20 @@ Completed in 0.261485 (3 reqs/sec) | DB: 0.009325 (3%)"
 end
 
 class TestLogParser < Test::Unit::TestCase
+
+  def test_class_parse_with_only_completed_at
+    log = StringIO.new <<-EOF
+Jul 23 12:08:50 trunk rails[27221]: Completed in 0.00507 (197 reqs/sec) | Rendering: 0.00027 (5%) | DB: 0.00055 (10%) | Rows: 88 | Queries: 1 | Guest | Method: GET | Request Size: 0 | Request Type: unknown | Response Format: all | Response Size: 3696 | Processed: RoomsController#list | 200 OK [http://kongregate.com/rooms/list]
+Jul 23 12:09:18 trunk rails[27221]: Completed in 0.11838 (8 reqs/sec) | Rendering: 0.10371 (87%) | DB: 0.00671 (5%) | Rows: 103 | Queries: 20 | Guest | Method: GET | Request Size: 0 | Request Type: unknown | Response Format: html | Response Size: 27254 | Processed: CategoriesController#show | 200 OK [http://kongregate.com/strategy-defense-games]
+    EOF
+    
+    entries = []
+    LogParser.parse log do |entry|
+      entries << entry
+    end
+    
+    assert_equal 2, entries.length
+  end
 
   def test_class_parse
     log = StringIO.new <<-EOF
@@ -222,19 +234,19 @@ Jan 03 12:24:24 duo2 rails[4277]: Completed in 0.00112 (896 reqs/sec) | DB: 0.00
 
   def test_class_parse_multi
     entries = []
-    File.open 'test/test.syslog.log' do |fp|
+    File.open "#{File.dirname(__FILE__)}/test.syslog.log" do |fp|
       LogParser.parse fp do |entry|
         entries << entry
       end
     end
-
-    assert_equal 12, entries.length
-    assert_equal 'RssController#uber', entries.first.page
-
-    redirect = entries[5]
+    
+    assert_equal 13, entries.length
+    assert_equal 0.300741, entries.first.request_time
+    
+    redirect = entries[6]
     assert_equal 'TeamsController#progress', redirect.page
     assert_equal 0, redirect.render_time
-
+    
     last = entries.last
     assert_equal 'PeopleController#progress', last.page
     assert_equal 0, last.request_time
@@ -242,7 +254,7 @@ Jan 03 12:24:24 duo2 rails[4277]: Completed in 0.00112 (896 reqs/sec) | DB: 0.00
 
   def test_class_parse_0_14_x
     entries = []
-    File.open 'test/test.syslog.0.14.x.log' do |fp|
+    File.open "#{File.dirname(__FILE__)}/test.syslog.0.14.x.log" do |fp|
       LogParser.parse fp do |entry|
         entries << entry
       end
