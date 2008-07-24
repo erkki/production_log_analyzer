@@ -9,7 +9,7 @@ require 'production_log/parser'
 class TestLogEntry < Test::Unit::TestCase
 
   def setup
-    @entry = LogParser::LogEntry.new <<EOF
+    @entry = LogParser::LogEntry.new <<-EOF
 Processing TwinklerController#index (for 81.109.96.173 at Wed Dec 01 16:01:56 CST 2004)
 Parameters: {\"action\"=>\"index\", \"controller\"=>\"twinkler\"}
 Browser Load First (0.001114)   SELECT * FROM browsers WHERE ubid = 'ixsXHgUo7U9PJGgBzr7e9ocaDOc=' LIMIT 1
@@ -21,7 +21,7 @@ EOF
   end
 
   def test_parse
-    request = <<EOF
+    request = <<-EOF
 Processing RssController#uber (for 67.18.200.5 at Mon Mar 07 00:00:25 CST 2005)
 Parameters: {:id=>"author", :"rss/uber/author.html/uber/author"=>nil, :action=>"uber", :username=>"looch", :controller=>"rss"}
 Cookie set: auth=dc%2FGUP20BwziF%2BApGecc0pXB0PF0obi55az63ubAFtsnOOdJPkhfJH2U09yuzQD3WtdmWnydLzFcRA78kwi7Gw%3D%3D; path=/; expires=Thu, 05 Mar 2015 06:00:25 GMT
