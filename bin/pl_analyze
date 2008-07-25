@@ -1,6 +1,7 @@
-#!/usr/local/bin/ruby -w
+#!/bin/env ruby -w
 
-require 'production_log/analyzer'
+$:.unshift "#{File.dirname(__FILE__)}/../lib/"
+require "production_log/analyzer"
 
 file_name = ARGV.shift
 
