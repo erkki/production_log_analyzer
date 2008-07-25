@@ -52,6 +52,14 @@ EOF
     assert_equal "FeaturedGamesController#index.html", @kong_entry.page
   end
 
+  def test_bad_kong_entry
+    assert_nothing_raised do
+      bad = LogParser::LogEntry.new <<-EOF
+Completed in 0.00904 (110 reqs/sec) | Rendering: 0.00572 (63%) | DB: 0.00093 (10%) | Rows: 2 | Queries: 2 | Guest | Method: GET | Request Size: 0 | Request Type: unknown | Response Format: Accept: application/xhtml+xml | Response Size: 8637 | Processed: MyCardsController#show | 200 OK [http://www.kongregate.com/accounts/orc22/cards/688263]
+EOF
+    end
+  end
+
   def test_row_count
     assert_equal 75, @kong_entry.row_count
   end

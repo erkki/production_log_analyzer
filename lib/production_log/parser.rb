@@ -91,7 +91,11 @@ module LogParser
           log_info = log_info.split(' | ')
           log_info = log_info.map do |entry|
             next nil unless entry.index(': ')
-            entry.strip.split(': ')
+            result = entry.strip.split(': ')
+            if result.size > 2
+              result = [result[0], result[1..-1].join(':')]
+            end
+            result
           end.compact.flatten
           
           log_info = Hash[*log_info]
