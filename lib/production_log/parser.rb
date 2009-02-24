@@ -83,12 +83,17 @@ module LogParser
           @page = $1
           @ip   = $2
           @time = $3
-        when /^Completed in ([\S]+) \(\d* reqs\/sec\) \| (.+)/ then
+        when /^Completed in ([\S]+) \(\d* reqs\/sec\) \| (.+)/,
+          /^Completed in ([\S]+) \((.+)\)/ then
+
           next if @in_component > 0
-          @request_time = $1.to_f
+          # handle millisecond times as well as fractional seconds
+          @times_in_milliseconds = $1[-2..-1] == 'ms'
+
+          @request_time = @times_in_milliseconds ? ($1.to_i/1000.0) : $1.to_f
           log_info = $2
 
-          log_info = log_info.split(' | ')
+          log_info = log_info.split(/[,|]/)
           log_info = log_info.map do |entry|
             next nil unless entry.index(': ')
             result = entry.strip.split(': ')
@@ -97,7 +102,7 @@ module LogParser
             end
             result
           end.compact.flatten
-          
+
           log_info = Hash[*log_info]
 
           @row_count = log_info['Rows'].to_i
@@ -108,9 +113,16 @@ module LogParser
           @page = log_info['Processed'] if log_info['Processed']
           @page += ".#{log_info['Response Format']}" if log_info['Response Format']
 
-          @db_time = log_info['DB'].split(' ').first.to_f if log_info['DB']
-          @render_time = log_info['Rendering'].split(' ').first.to_f if log_info['Rendering']
-          
+          if x = (log_info['DB'])
+            x = x.split(' ').first
+            @db_time = @times_in_milliseconds ? (x.to_i/1000.0) : x.to_f
+          end
+
+          if x = (log_info['Rendering'] || log_info['View'])
+            x = x.split(' ').first
+            @render_time = @times_in_milliseconds ? (x.to_i/1000.0) : x.to_f
+          end
+
         when /(.+?) \(([^)]+)\)   / then
           @queries << [$1, $2.to_f]
         when /^Start rendering component / then

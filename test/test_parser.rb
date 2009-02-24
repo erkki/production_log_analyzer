@@ -102,6 +102,9 @@ EOF
 Completed in 0.261485 (3 reqs/sec) | DB: 0.009325 (3%)"
 
     assert_equal 0.261485, @entry.request_time
+
+    @entry = LogParser::LogEntry.new "Completed in 13ms (View: 12, DB: 1) | 200 OK [http://www.example.com/]"
+    assert_equal 13/1000.0, @entry.request_time
   end
 
   def test_render_time
@@ -111,10 +114,16 @@ Completed in 0.261485 (3 reqs/sec) | DB: 0.009325 (3%)"
 Completed in 0.261485 (3 reqs/sec) | DB: 0.009325 (3%)"
 
     assert_equal 0, @entry.render_time
+
+    @entry = LogParser::LogEntry.new 'Completed in 13ms (View: 12, DB: 1) | 200 OK [http://www.example.com/]'
+    assert_equal 12/1000.0, @entry.render_time
   end
 
   def test_db_time
     assert_equal 0.002876, @entry.db_time
+
+    @entry = LogParser::LogEntry.new 'Completed in 13ms (View: 12, DB: 1) | 200 OK [http://www.example.com/]'
+    assert_equal 1/1000.0, @entry.db_time
   end
 
 end
